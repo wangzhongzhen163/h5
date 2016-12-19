@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        .contain {
+            width: 800px;
+            height: 600px;
+            margin: 100px auto;
+        }
+    </style>
+    <script src='rect.js'></script>
+</head>
+<body>
+<div class="contain"><canvas id="cv"></canvas></div>
+<script>
+    var cv = document.getElementById("cv")
+    var ctx = cv.getContext('2d')
+    cv.width = 800,cv.height = 600;
+    var radian = function (angle) {
+        return angle / 180 * Math.PI
+    }
+    var x0 = cv.width / 2, y0 = cv.height / 2, outradius = 252, innerradius = 252 / 2, circleradius = 66, list = [];
+    var bigCircle=[{radius:outradius}, {radius:innerradius}];
+    bigCircle.forEach(function (value) {
+        var tem = new Circle({
+            ctx: ctx,
+            radius: value.radius,
+            ringStyle: '#ccc',
+            lineDash:[6],
+            x: x0,
+            y: y0
+        });
+        tem.strokes();
+        list.push({
+            circle: tem,
+            startangle: 0,
+            radius: outradius,
+            ring: true
+        });
+    })
+    //    中心圆
+    var c3 = new Circle({
+        ctx: ctx,
+        radius: 66,
+        x: x0,
+        y: y0,
+        circleStyle: "#525A82",
+        ringStyle: "#e1e1e1",
+        hasRing: true,
+        ringWidth: 10,
+        text: "太阳",
+        font: "24px consolas",
+        textColor: "white"
+    })
+    c3.fills();
+    list.push({
+        circle: c3,
+        startangle: -1,
+        radius: circleradius,
+        rotate: false,
+        dir: 0
+    })
+    //    内圆上的小圆
+    var arr=[{angle: 0, text: "天王星", color: "yellow"},
+        {angle: 120, text: "海王星", color: "purple"}, {angle: 240, text: "冥王星", color: "green"}]
+    arr.forEach(function (value) {
+        var tep=new Circle({
+            ctx: ctx,
+            radius: 30,
+            circleStyle: "#FABB48",
+            ringStyle: "#e1e1e1",
+            ringWidth: 8,
+            x: x0 + innerradius * Math.cos(radian(value.angle)),
+            y: y0 + innerradius * Math.sin(radian(value.angle)),
+            hasRing: true,
+            text: value.text,
+            font: '14px consolas',
+            textColor:value.color
+        });
+        tep.fills();
+        list.push({
+            circle:tep,
+            startangle:value.angle,
+            radius:innerradius,
+            rotate:true,
+            dir:1
+        })
+    })
+    //    外员的小圆
+    var outerRings = [
+        {angle: 72, text: "地球", color: "yellow"},
+        {angle: 144, text: "月亮", color: "purple"},
+        {angle: 216, text: "星星", color: "green"},
+        {angle: 288, text: "金星", color: "orange"},
+        {angle: 360, text: "火星", color: "teal"}];
+    outerRings.forEach(function (value, index) {
+        var temp = new Circle({
+            ctx: ctx,
+            radius: 40,
+            circleStyle: value.color,
+            ringStyle: "#e1e1e1",
+            x: x0 + outradius * Math.cos(radian(value.angle)),
+            y: y0 + outradius * Math.sin(radian(value.angle)),
+            hasRing: true,
+            ringWidth: 8,
+            text: value.text,
+            font: "12px consolas",
+            textColor: "white"
+        })
+        temp.fills();
+        list.push({
+            circle: temp,
+            startangle: value.angle,
+            radius: outradius,
+            rotate: true,
+            dir: 2
+        })
+    });
+    var step;
+    function render() {
+        ctx.clearRect(0, 0, cv.width, cv.height)
+        list.forEach(function (value, index) {
+            if (value.ring) {
+                value.circle.strokes();
+            } else if (value.rotate) {
+                if (value.dir === 2) {
+                    step = -1;
+                    value.circle.renders(value.startangle += step, value.radius)
+                } else if (value.dir == 1) {
+                    step = 1;
+                    value.circle.renders(value.startangle += step, value.radius)
+                }
+            } else {
+                value.circle.fills();
+            }
+        })
+        requestAnimationFrame(render)
+    }
+    render();
+</script>
+</body>
+</html>
